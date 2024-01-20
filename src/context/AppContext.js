@@ -20,12 +20,25 @@ export const AppReducer = (state, action) => {
                 ...state,
             };
 
-        case 'RED_QUANTITY':
+            case 'RED_QUANTITY':
+                state.expenses.map((expense)=>{
+                    if(expense.name === action.payload.name) {
+                        expense.quantity = expense.quantity - action.payload.quantity;
+                    }
+                    expense.quantity = expense.quantity < 0 ? 0: expense.quantity;
+                    new_expenses.push(expense);
+                    return true;
+                })
+                state.expenses = new_expenses;
+                action.type = "DONE";
+                return {
+                    ...state,
+                };
+        case 'DELETE_ITEM':
             state.expenses.map((expense)=>{
                 if(expense.name === action.payload.name) {
-                    expense.quantity = expense.quantity - action.payload.quantity;
+                    expense.quantity = 0;
                 }
-                expense.quantity = expense.quantity < 0 ? 0: expense.quantity;
                 new_expenses.push(expense);
                 return true;
             })
@@ -34,12 +47,13 @@ export const AppReducer = (state, action) => {
             return {
                 ...state,
             };
-        case 'CHG_LOCATION': 
+    case 'CHG_LOCATION':
             action.type = "DONE";
             state.Location = action.payload;
             return {
-                ...state,
+                ...state
             }
+
         default:
             return state;
     }
@@ -52,9 +66,35 @@ const initialState = {
         { id: "Jeans", name: 'Jeans', quantity: 0, unitprice: 300 },
         { id: "Dress", name: 'Dress', quantity: 0, unitprice: 400 },
         { id: "Dinner set", name: 'Dinner set', quantity: 0, unitprice: 600 },
-        { id: "Bag", name: 'Bag', quantity: 0, unitprice: 200 },
-    ]
-    Location: '$'
+        { id: "Bags", name: 'Bags', quantity: 0, unitprice: 200 },
+    ],
+    Location: '£'
 };
 
-// 2 
+// 2. Creates the context this is the thing our components import and use to get the state
+export const AppContext = createContext();
+
+// 3. Provider component - wraps the components we want to give access to the state
+// Accepts the children, which are the nested(wrapped) components
+export const AppProvider = (props) => {
+    // 4. Sets up the app state. takes a reducer, and an initial state
+    const [state, dispatch] = useReducer(AppReducer, initialState);
+
+    const totalExpenses = state.expenses.reduce((total, item) => {
+        return (total = total + (item.unitprice*item.quantity));
+    }, 0);
+state.CartValue = totalExpenses;
+
+    return (
+        <AppContext.Provider
+            value={{
+                expenses: state.expenses,
+                CartValue: state.CartValue,
+                dispatch,
+                Location: state.Location
+            }}
+        >
+            {props.children}
+        </AppContext.Provider>
+    );
+};
