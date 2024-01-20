@@ -40,8 +40,7 @@ const App = () => {
 	  					<ItemSelected />
 	  					</div>
 	  				</div>
-	  			</div>
-    		</div>  	  
+	  			</div>	  
 	  </AppProvider>
    );
 }
